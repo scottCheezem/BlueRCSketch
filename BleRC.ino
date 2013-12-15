@@ -71,7 +71,7 @@ void loop() {
      
      digitalWrite(dir_b, dirForMotor2);
      analogWrite(pwm_b, valForMotor2);
-    
+    /*
 
      Serial.print("valForMotor1:");     
      Serial.println(valForMotor1);
@@ -87,7 +87,7 @@ void loop() {
      Serial.println(dirForMotor2);
 
       Serial.println("-----");
-
+*/
 
     }
     
