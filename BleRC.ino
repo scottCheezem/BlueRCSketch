@@ -1,26 +1,19 @@
 #include <SPI.h>
 #include <ble.h>
 
+#include <AFMotor.h>
 
-int pwm_a = 3;  //PWM control for motor outputs 1 and 2 is on digital pin 3
-int pwm_b = 11;  //PWM control for motor outputs 3 and 4 is on digital pin 11
-int dir_a = 12;  //dir control for motor outputs 1 and 2 is on digital pin 12
-int dir_b = 13;  //dir control for motor outputs 3 and 4 is on digital pin 13
+AF_DCMotor RightFrontMotor(1);
+AF_DCMotor LeftFrontMotor(2);
+AF_DCMotor LeftBackMotor(3);
+AF_DCMotor RightBackMotor(4);
 
-
-
+boolean connected;
 
 void setup() {
   
   
-  pinMode(pwm_a, OUTPUT);  //Set control pins to be outputs
-  pinMode(pwm_b, OUTPUT);
-  pinMode(dir_a, OUTPUT);
-  pinMode(dir_b, OUTPUT);
   
-  
-  analogWrite(pwm_a, 0);
-  analogWrite(pwm_b, 0);
   
   // put your setup code here, to run once:
   SPI.setDataMode(SPI_MODE0);
@@ -30,86 +23,85 @@ void setup() {
 
   ble_begin();
 
-  Serial.begin(57600);
+  Serial.begin(115200);
 }
 
 void loop() {
   // put your main code here, to run repeatedly: 
 
-
+/*
   if(ble_connected()){
-    digitalWrite(7,255); 
+    //set some sort of pin as verification we connected.  but only once
 
-  }  
-
+  }  */
+  
+  setConnected(ble_connected());
    
 
-  
+  //read in an x,y value over ble...
   while(ble_available()){
     
     
+//[xy]Mag : magnitude for the x or y axis, 0-100
+//[xy]Sign : the direction 1 positive, 0 for negative along the axis        
+//buf[]={xMag,xSign,yMag,ySign, NULL}
     
-    
-    //byte motor1;
-    byte valForMotor1;
-    byte dirForMotor1;
-    
-    //byte motor2;
-    byte valForMotor2;
-    byte dirForMotor2;
-    
-    if(valForMotor1 = ble_read()){
-      //read the first number for the led to address, and the second for the value...
 
-     dirForMotor1 = ble_read();
-     
-     valForMotor2 = ble_read();
-     dirForMotor2 = ble_read();
-     
-     digitalWrite(dir_a, dirForMotor1);
-     analogWrite(pwm_a, valForMotor1);
-     
-     digitalWrite(dir_b, dirForMotor2);
-     analogWrite(pwm_b, valForMotor2);
-    /*
-
-     Serial.print("valForMotor1:");     
-     Serial.println(valForMotor1);
-     
-     Serial.print("dirForMotor1:");     
-     Serial.println(dirForMotor1);
-
+    byte xVal;
+    byte xMag;
+    byte yVal;
+    byte yMag;
+    
+    
+    
+    
+    if(xVal = ble_read()){
+      xMag = ble_read();
+      yVal = ble_read();
+      yMag = ble_read();
       
-     Serial.print("valForMotor2:");     
-     Serial.println(valForMotor2);
+     Serial.print("buf:");
+     Serial.print(xVal);
+     Serial.print(",");
+     Serial.print(xMag);
+     Serial.print(",");
+     Serial.print(yVal);
+     Serial.print(",");
+     Serial.print(yMag);
+     Serial.println(";");
      
-     Serial.print("dirForMotor2:");     
-     Serial.println(dirForMotor2);
-
-      Serial.println("-----");
-*/
-
+     
+     
     }
     
     
 
     
   }
-  /*
+  /*for delivering data back to device
   if(digitalRead(4) == LOW){
       Serial.println("HI");
        ble_write('1'); 
     }
   */
-  if (!ble_connected())
-  {
-    digitalWrite(7, LOW);
-
-    //analog_enabled = false;
-    //digitalWrite(DIGITAL_OUT_PIN, LOW);
-  }
   
   // Allow BLE Shield to send/receive data
   ble_do_events();
   //digitalWrite(RED, LOW);
 }
+
+
+void setConnected(boolean newState){
+  if(newState != connected){
+    connected = newState;
+    if(connected){
+      Serial.println("Now Connected");
+      //turn on an LED
+    }else{
+      Serial.println("Now Disconnected");
+      //turn off an LED
+    }
+  }
+  
+}
+
